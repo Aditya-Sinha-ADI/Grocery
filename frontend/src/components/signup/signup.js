@@ -1,7 +1,89 @@
-import { Fragment } from "react";
+import { Fragment, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import "./signup.css";
 const Signup = () => {
+  const [inputEmail, setInputEmail] = useState("");
+  const [wrongPasswordClass, setWrongPasswordClass] = useState(false);
+  const [wrongConfirmPasswordClass, setWrongConfirmPasswordClass] =
+    useState(false);
+
+  const passwordReducer = (state, action) => {
+    if (action.type === "USER_PASSWORD") {
+      return {
+        valuePassword: action.val,
+        passwordIsValid: action.val.trim().length > 5,
+      };
+    }
+    return {
+      valuePassword: "",
+      passwordIsValid: false,
+    };
+  };
+
+  const confirmPasswordReducer = (state, action) => {
+    if (action.type === "CONFIRM_USER_PASSWORD") {
+      return {
+        valueConfirmPassword: action.val,
+        confirmPasswordIsValid: passwordState.valuePassword === action.val,
+      };
+    }
+    return {
+      valueConfirmPassword: "",
+      confirmPasswordIsValid: false,
+    };
+  };
+
+  const [passwordState, dispachedPassword] = useReducer(passwordReducer, {
+    valuePassword: "",
+    passwordIsValid: false,
+  });
+
+  const [confirmPasswordState, dispachedConfirmPassword] = useReducer(
+    confirmPasswordReducer,
+    {
+      valueConfirmPassword: "",
+      confirmPasswordIsValid: false,
+    }
+  );
+
+  const emailChangeHandler = (event) => {
+    setInputEmail(event.target.value);
+  };
+
+  const passwordChangeHandler = (event) => {
+    dispachedPassword({
+      type: "USER_PASSWORD",
+      val: event.target.value,
+    });
+  };
+
+  const confirmPasswordChangeHandler = (event) => {
+    dispachedConfirmPassword({
+      type: "CONFIRM_USER_PASSWORD",
+      val: event.target.value,
+    });
+  };
+
+  const onSubmitHandler = (event) => {
+    event.preventDefault();
+
+    if (passwordState.passwordIsValid) {
+      setWrongPasswordClass(false);
+    }
+    if (confirmPasswordState.confirmPasswordIsValid) {
+      setWrongConfirmPasswordClass(false);
+    }
+    if (!passwordState.passwordIsValid) {
+      setWrongPasswordClass(true);
+      return;
+    }
+
+    if (!confirmPasswordState.confirmPasswordIsValid) {
+      setWrongConfirmPasswordClass(true);
+      return;
+    }
+  };
+
   return (
     <Fragment>
       <div className="Login_background">
@@ -124,18 +206,44 @@ const Signup = () => {
                 <p>So good to see you.</p>
               </div>
               <div className="form mt-5">
-                <form>
+                <form onSubmit={onSubmitHandler}>
                   <div className="email">
                     <p>Email</p>
-                    <input type="email"></input>
+                    <input type="email" onChange={emailChangeHandler}></input>
                   </div>
                   <div className="password mt-4 mb-4">
                     <p>Password</p>
-                    <input type="password"></input>
+                    <input
+                      type="password"
+                      onChange={passwordChangeHandler}
+                    ></input>
                   </div>
                   <div className="confirm-password mt-4 mb-4">
                     <p>Confirm Password</p>
-                    <input type="password"></input>
+                    <input
+                      type="password"
+                      onChange={confirmPasswordChangeHandler}
+                    ></input>
+                  </div>
+                  <div className="incorrect">
+                    <div
+                      className={
+                        wrongPasswordClass
+                          ? "password-incorrect"
+                          : "password-correct"
+                      }
+                    >
+                      <p>Password should be of atleast 6 letters.</p>
+                    </div>
+                    <div
+                      className={
+                        wrongConfirmPasswordClass
+                          ? "confirm-password-incorrect"
+                          : "confirm-password-correct"
+                      }
+                    >
+                      <p>Confirm password should be same as the password.</p>
+                    </div>
                   </div>
                   <button type="submit">Login</button>
                 </form>
